@@ -1,10 +1,8 @@
 
-# twitterExplorer
+# rmarkdownExplorer
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-This is a template repository for R-based Twitter dashboards, with support for automatic updates through GitHub Actions as well as some utility functions to quickly get you started!
-
-Check our [documentation](https://github.com/jvfe/twitterExplorer/wiki) for a full walkthrough of how to use this repository.
+This is an automatically updated flexdashboard that showcases data from the `#rmarkdown` Twitter hashtag. This project uses the [twitterExplorer](https://github.com/jvfe/twitterExplorer) template, check out the [documentation](https://github.com/jvfe/twitterExplorer/wiki) for a full walkthrough of how to use that template.
 
