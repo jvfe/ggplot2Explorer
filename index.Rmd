@@ -1,0 +1,115 @@
+---
+title: "Twitter Explorer"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+    source_code: embed
+    theme:
+      version: 4
+      bootswatch: yeti
+    css: styles/main.css
+---
+
+```{r load_packages, include=FALSE}
+devtools::load_all()
+library(flexdashboard)
+library(rtweet)
+library(vroom)
+library(dplyr)
+```
+
+```{r load_data, include=FALSE, cache=TRUE}
+rstats_tweets <- readData("data/tweets.csv.gz")
+```
+
+```{r process_data, include=FALSE, cache=TRUE}
+timeline <- make_by_day_metrics(rstats_tweets)
+
+n_tweets <- get_unique_value(rstats_tweets, text)
+
+n_retweets <- rstats_tweets %>%
+  pull(retweet_count) %>%
+  sum()
+
+n_users <- get_unique_value(rstats_tweets, user_id)
+
+n_likes <- rstats_tweets %>%
+  pull(favorite_count) %>%
+  sum()
+
+tweets_today <- rstats_tweets %>%
+  filter(lubridate::date(created_at) == lubridate::today())
+```
+
+Row
+-------------------------------------
+
+### #rstats Tweets
+
+```{r}
+valueBox(n_tweets, icon = "fa-comments")
+```
+
+### #rstats Retweets
+
+```{r}
+valueBox(n_retweets, icon = "fa-retweet")
+```
+
+### Users
+
+```{r}
+valueBox(n_users, icon = "fa-user")
+```
+
+### Likes
+
+```{r}
+valueBox(n_likes, icon = "fa-heart")
+```
+
+Row {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+### Tweet volume
+
+```{r tweet_volume}
+plot_tweet_volume(timeline)
+```
+
+### Tweets by Hour of Day
+
+```{r tweets_by_hour}
+plot_tweet_by_hour(rstats_tweets)
+```
+
+Row
+-----------------------------------------------------------------------
+
+### 💗 Most Liked Tweet Today {.tweet-box}
+
+```{r most_liked}
+most_liked_url <- tweets_today %>%
+  slice_max(favorite_count, with_ties = FALSE)
+
+get_tweet_embed(most_liked_url$screen_name, most_liked_url$status_id)
+```
+
+### ✨ Most Retweeted Tweet Today {.tweet-box}
+
+```{r most_rt}
+most_retweeted <- tweets_today %>%
+  slice_max(retweet_count, with_ties = FALSE)
+
+get_tweet_embed(most_retweeted$screen_name, most_retweeted$status_id)
+```
+
+### 🎉 Most Recent {.tweet-box}
+
+```{r most_recent}
+most_recent <- tweets_today %>%
+  slice_max(created_at, with_ties = FALSE)
+
+get_tweet_embed(most_recent$screen_name, most_recent$status_id)
+```
