@@ -2,7 +2,7 @@ library(magrittr)
 devtools::load_all()
 #### Function call ####
 
-getData("#rstats",
+getData("#rmarkdown",
         5000,
         "data/tweets.csv.gz",
         include_rts = FALSE,

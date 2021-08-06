@@ -21,6 +21,7 @@ Imports:
     echarts4r,
     flexdashboard,
     httr,
+    vroom,
     janitor,
     logger,
     lubridate,
