@@ -27,6 +27,7 @@ Imports:
     lubridate,
     magrittr,
     rtweet,
+    tidytext,
     fs
 Suggests: 
     testthat (>= 3.0.0)

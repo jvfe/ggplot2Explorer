@@ -1,5 +1,5 @@
 ---
-title: "Twitter Explorer"
+title: "RMarkdown Twitter Explorer"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -17,6 +17,10 @@ library(flexdashboard)
 library(rtweet)
 library(vroom)
 library(dplyr)
+library(lubridate)
+library(echarts4r)
+library(DT)
+library(tidytext)
 ```
 
 ```{r load_data, include=FALSE, cache=TRUE}
@@ -40,18 +44,43 @@ n_likes <- rstats_tweets %>%
 
 tweets_today <- rstats_tweets %>%
   filter(lubridate::date(created_at) == lubridate::today())
+
+tweets_week <- rstats_tweets %>%
+  filter(date(created_at) %within% interval(floor_date(today(), "week"), today()))
+
+word_banlist <-  c("t.co", "https", "rmarkdown")
+top_words <- rstats_tweets %>%
+  select(text) %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words) %>%
+  filter(!(word %in% word_banlist)) %>%
+  filter(nchar(word) > 4) %>%
+  count(word, sort = TRUE) %>%
+  slice_max(n, n = 10, with_ties = FALSE) %>%
+  select(word, n)
+
+top_locations <- rstats_tweets %>%
+  filter(!is.na(location) & location != "#rstats") %>%
+  distinct(user_id, .keep_all = TRUE) %>%
+  mutate(location = stringr::str_replace_all(location, "London$", "London, England")) %>%
+  count(location) %>%
+  slice_max(n, n = 10, with_ties = FALSE)
+
 ```
+
+Home {data-icon="ion-home"}
+====
 
 Row
 -------------------------------------
 
-### #rstats Tweets
+### #RMarkdown Tweets
 
 ```{r}
 valueBox(n_tweets, icon = "fa-comments")
 ```
 
-### #rstats Retweets
+### #RMarkdown Retweets
 
 ```{r}
 valueBox(n_retweets, icon = "fa-retweet")
@@ -112,4 +141,88 @@ most_recent <- tweets_today %>%
   slice_max(created_at, with_ties = FALSE)
 
 get_tweet_embed(most_recent$screen_name, most_recent$status_id)
+
+```
+
+Rankings {data-icon="ion-arrow-graph-up-right"}
+=========
+
+Row
+-----------------------------------------------------------------------
+
+### Top Words
+
+```{r top_words}
+top_words %>%
+  e_charts(word) %>%
+  e_bar(n, legend = FALSE) %>% 
+  e_x_axis(
+    axisLabel = list(
+      interval = 0L,
+      rotate = 30
+    )
+  ) %>%
+  e_toolbox_feature("saveAsImage") %>%
+  e_axis_labels(y = "Number of occurrences")
+```
+
+### Top Locations
+
+```{r top_locations}
+top_locations %>% 
+	mutate(location = stringr::str_wrap(location, 9)) %>% 
+  e_charts(location) %>% 
+  e_bar(n, legend = FALSE) %>% 
+  e_x_axis(
+    axisLabel = list(
+      interval = 0L,
+      rotate = 30
+    )
+  ) %>%
+  e_toolbox_feature("saveAsImage") %>%
+  e_axis_labels(y = "Number of users from location")
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Tweets in the current week {.datatable-container}
+
+```{r datatable}
+tweets_week %>%
+  select(
+    status_url,
+    created_at,
+    screen_name,
+    text,
+    retweet_count,
+    favorite_count,
+    mentions_screen_name
+  ) %>%
+  mutate(
+    status_url = stringr::str_glue("<a href=\"{status_url}\" target=\"_blank\">On Twitter</a>")
+  ) %>%
+  datatable(
+    .,
+    extensions = "Buttons",
+    rownames = FALSE,
+    escape = FALSE,
+    colnames = c("Timestamp", "User", "Tweet", "RT", "Fav", "Mentioned"),
+    filter = 'top',
+    options = list(
+      columnDefs = list(list(
+        targets = 0, searchable = FALSE
+      )),
+      lengthMenu = c(5, 10, 25, 50, 100),
+      pageLength = 10,
+      scrollY = 600,
+      scroller = TRUE,
+      dom = '<"d-flex justify-content-between"lBf>rtip',
+      buttons = list('copy', list(
+        extend = 'collection',
+        buttons = c('csv', 'excel'),
+        text = 'Download'
+      ))
+    )
+  )
 ```
