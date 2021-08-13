@@ -1,5 +1,5 @@
 ---
-title: "RMarkdown Twitter Explorer"
+title: "ggplot2 Twitter Explorer"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -48,7 +48,7 @@ tweets_today <- rstats_tweets %>%
 tweets_week <- rstats_tweets %>%
   filter(date(created_at) %within% interval(floor_date(today(), "week"), today()))
 
-word_banlist <-  c("t.co", "https", "rmarkdown")
+word_banlist <-  c("t.co", "https", "ggplot2")
 top_words <- rstats_tweets %>%
   select(text) %>%
   unnest_tokens(word, text) %>%
@@ -74,13 +74,13 @@ Home {data-icon="ion-home"}
 Row
 -------------------------------------
 
-### #RMarkdown Tweets
+### #ggplot2 Tweets
 
 ```{r}
 valueBox(n_tweets, icon = "fa-comments")
 ```
 
-### #RMarkdown Retweets
+### #ggplot2 Retweets
 
 ```{r}
 valueBox(n_retweets, icon = "fa-retweet")
