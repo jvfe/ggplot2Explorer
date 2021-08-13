@@ -8,6 +8,7 @@ output:
     theme:
       version: 4
       bootswatch: yeti
+    self_contained: false
     css: styles/main.css
 ---
 
@@ -20,6 +21,7 @@ library(dplyr)
 library(lubridate)
 library(echarts4r)
 library(DT)
+library(reactable)
 library(tidytext)
 ```
 
@@ -66,6 +68,17 @@ top_locations <- rstats_tweets %>%
   count(location) %>%
   slice_max(n, n = 10, with_ties = FALSE)
 
+top_tweeters <- rstats_tweets %>%
+  group_by(user_id, screen_name, profile_url, profile_image_url) %>%
+  summarize(engagement = (sum(retweet_count) * 2 + sum(favorite_count)) / n()) %>%
+  ungroup() %>%
+  slice_max(engagement, n = 10, with_ties = FALSE)
+
+top_tweeters_format <- top_tweeters %>%
+  mutate(
+    profile_url = stringr::str_glue("https://twitter.com/{screen_name}"),
+    screen_name = stringr::str_glue('<a href="{profile_url}" target="_blank">@{screen_name}</a>'),
+  )
 ```
 
 Home {data-icon="ion-home"}
@@ -147,8 +160,54 @@ get_tweet_embed(most_recent$screen_name, most_recent$status_id)
 Rankings {data-icon="ion-arrow-graph-up-right"}
 =========
 
-Row
+Row {data-height=600}
 -----------------------------------------------------------------------
+
+### Top Tweeters
+
+Where Engagement is `RT * 2 + Favourite`
+
+```{r top_tweeters}
+top_tweeters_format %>%
+  reactable(
+    .,
+    highlight = TRUE,
+    defaultSorted = "engagement",
+    defaultColDef = colDef(headerClass = "header", align = "left", minWidth = 50),
+    columns = list(
+      screen_name = colDef(
+        name = "User",
+        html = TRUE,
+        width = 250,
+        cell = function(value, index) {
+          profile <-
+            stringr::str_glue(
+              '<img class="img-fluid rounded-circle mr-2" src="{top_tweeters_format[index, "profile_image_url"]}" alt="{top_tweeters_format[index, "user_id"]}">'
+            )
+          
+          stringr::str_glue('{profile} {value}')
+        }
+      ),
+      engagement = colDef(
+        name = "Engagement/Tweet",
+        defaultSortOrder = "desc",
+        cell = function(value) {
+            build_bar_col(value, top_tweeters_format$engagement, "#a3c1e0")
+          }
+      ),
+      user_id = colDef(
+        show = FALSE
+      ),
+      profile_url = colDef(
+        show = FALSE
+      ),
+      profile_image_url = colDef(
+        show = FALSE
+      )
+    ),
+    class = "top-tbl"
+  )
+```
 
 ### Top Words
 
@@ -164,23 +223,6 @@ top_words %>%
   ) %>%
   e_toolbox_feature("saveAsImage") %>%
   e_axis_labels(y = "Number of occurrences")
-```
-
-### Top Locations
-
-```{r top_locations}
-top_locations %>% 
-	mutate(location = stringr::str_wrap(location, 9)) %>% 
-  e_charts(location) %>% 
-  e_bar(n, legend = FALSE) %>% 
-  e_x_axis(
-    axisLabel = list(
-      interval = 0L,
-      rotate = 30
-    )
-  ) %>%
-  e_toolbox_feature("saveAsImage") %>%
-  e_axis_labels(y = "Number of users from location")
 ```
 
 Row

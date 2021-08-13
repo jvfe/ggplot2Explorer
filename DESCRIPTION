@@ -27,6 +27,7 @@ Imports:
     lubridate,
     magrittr,
     rtweet,
+    reactable,
     tidytext,
     fs
 Suggests: 

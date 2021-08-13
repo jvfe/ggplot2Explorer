@@ -35,3 +35,53 @@ blockquote.twitter-tweet {
 .chart-stage .echarts4r {
   max-height: 25em !important;
 }
+
+/* BarCol section start */
+/* Styles for the table */
+.top-tbl {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.top-tbl a, .tbl-link {
+  color: inherit;
+}
+
+/* Styles for the column headers */
+.header {
+  border-bottom: 2px solid #555;
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.header:hover {
+  background-color: #eee;
+}
+
+/* Styles for the bar charts */
+.bar-cell {
+  display: flex;
+  align-items: center;
+}
+
+.number {
+  font-family: "Fira Mono", Consolas, Monaco, monospace;
+  font-size: 13.5px;
+  white-space: pre;
+}
+
+.bar-chart {
+  flex-grow: 1;
+  margin-left: 6px;
+  height: 14px;
+}
+
+.bar {
+  height: 100%;
+}
+
+img.rounded-circle {
+  width: 15%;
+}
+/* Styles for the bar charts end */

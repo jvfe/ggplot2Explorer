@@ -109,3 +109,31 @@ plot_tweet_by_hour <- function(tweet_dataset) {
       return(`${title}</br>${num}`);
     }"))
 }
+
+#' Build bar column in reactable
+#'
+#' @param value
+#' @param max_col
+#' @param color
+#'
+#' @return
+#' @export
+#'
+#' @examples
+build_bar_col <- function(value, max_col, color) {
+  width <-
+    paste0(value * 100 / max(max_col), "%")
+
+  value <- format(value, big.mark = ",")
+  value <- format(value, width = 9, justify = "right")
+
+  bar <- htmltools::div(
+    class = "bar-chart",
+    style = list(marginRight = "6px"),
+    htmltools::div(
+      class = "bar",
+      style = list(width = width, backgroundColor = color)
+    )
+  )
+  htmltools::div(class = "bar-cell", htmltools::span(class = "number", value), bar)
+}
